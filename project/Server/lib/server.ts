@@ -36,9 +36,6 @@ io.listen(server, { log: true })
         io.to(recId).emit('signal', data);
       }
     })
-
-    
-
   });
 
 

@@ -1,42 +1,35 @@
 import React, { Component } from 'react';
 import Peer from 'simple-peer'
 import io from 'socket.io-client'
+import { WebRTCHandler } from '../_components/WebRTCHandler/WebRTCHandler';
 
 const debug = require('debug')('screen-share:app')
 
-const ioUrl = 'http://localhost:3000/'
-const enableTrickle = true
+
 
 class App extends Component {
 
-  state = {
-    peers: {},
-    stream: null
-  }
-
   constructor() {
-    super()
-    this.onMedia = this.onMedia.bind(this)
-    this.createPeer = this.createPeer.bind(this)
-    this.getMedia(this.onMedia, err => {
-      this.setState({
-        mediaErr: 'Could not access webcam'
-      })
-      debug('getMedia error', err)
-    })
+    super();
+    this.state = {
+      peers: {},
+      stream: null,
+    }
   }
 
   componentDidUpdate() {
+    const { stream } = this.state;
     console.log('ComponentDidUpdate');
-    if (this.stream && this.video && !this.video.srcObject) {
-      console.log('set video stream', this.video, this.stream)
-      this.video.srcObject = this.stream
+    if (stream && this.video && !this.video.srcObject) {
+      console.log('set video stream', this.video, stream)
+      this.video.srcObject = stream
     }
     this.attachPeerVideos()
   }
 
-  attachPeerVideos() {
-    Object.entries(this.state.peers).forEach(entry => {
+  attachPeerVideos = () => {
+    const { peers } = this.state;
+    Object.entries(peers).forEach(entry => {
       const [peerId, peer] = entry
       if (peer.video && !peer.video.srcObject && peer.stream) {
         console.log('setting peer video stream', peerId, peer.stream)
@@ -47,85 +40,19 @@ class App extends Component {
     })
   }
 
-  getMedia(callback, err) {
-    const options = { video: true, audio: true }
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      return navigator.mediaDevices.getUserMedia(options)
-        .then(stream => callback(stream))
-        .catch(e => err(e))
+  signalPeer = (peerId, data) => {
+    try {
+      const { peers } = this.state;
+      const peer = peers[peerId];
+      
+      console.log('Signal peer', peer);
+      peer.signal(data)
+    } catch(e) {
+      console.log('sigal error', e)
     }
-    return navigator.getUserMedia(options, callback,  err)
   }
 
-  onMedia(stream) {
-    this.stream = stream
-    this.forceUpdate() // we have stream
-    console.log('On media');
-    this.socket = io(ioUrl)
-    this.socket.on('peer', msg => {
-      const peerId = msg.peerId
-      debug('new peer poof!', peerId)
-      if (peerId === this.socket.id) {
-        return debug('Peer is me :D', peerId)
-      }
-      this.createPeer(peerId, true, stream)
-    })
-    this.socket.on('signal', data => {
-      const peerId = data.from
-      const peer = this.state.peers[peerId]
-      if (!peer) {
-        this.createPeer(peerId, false, stream)
-      }
-      debug('Setting signal', peerId, data)
-      this.signalPeer(this.state.peers[peerId], data.signal)
-    })
-    this.socket.on('unpeer', msg => {
-      debug('Unpeer', msg)
-      this.destroyPeer(msg.peerId)
-    })
-  }
-
-  createPeer(peerId, initiator, stream) {
-    debug('creating new peer', peerId, initiator)
-
-    const peer = new Peer({initiator: initiator, trickle: enableTrickle, stream})
-
-    peer.on('signal', (signal) => {
-      const msgId = (new Date().getTime())
-      const msg = { msgId, signal, to: peerId }
-      debug('peer signal sent', msg)
-      this.socket.emit('signal', msg)
-    })
-
-    peer.on('stream', (stream) => {
-      console.log('Got peer stream!!!', peerId, stream)
-      peer.stream = stream
-      this.setPeerState(peerId, peer)
-    })
-
-    peer.on('connect', () => {
-      console.log('Connected to peer', peerId)
-      peer.connected = true
-      this.setPeerState(peerId, peer)
-      peer.send(this.serialize({
-        msg: 'hey man!'
-      }))
-    })
-
-    peer.on('data', data => {
-      console.log('Data from peer', peerId, this.unserialize(data))
-    })
-
-    peer.on('error', (e) => {
-      console.log('Peer error %s:', peerId, e);
-    })
-
-    this.setPeerState(peerId, peer)
-
-    return peer
-  }
-
-  destroyPeer(peerId) {
+  destroyPeer = peerId => {
     const peers = {...this.state.peers}
     delete peers[peerId]
     this.setState({
@@ -133,19 +60,7 @@ class App extends Component {
     })
   }
 
-  serialize(data) {
-    return JSON.stringify(data)
-  }
-
-  unserialize(data) {
-    try {
-      return JSON.parse(data.toString())
-    } catch(e) {
-      return undefined
-    }
-  }
-
-  setPeerState(peerId, peer) {
+  setPeerState = (peerId, peer) => {
     console.log('SetPeerState');
     console.log(peerId, peer);
     const peers = {...this.state.peers}
@@ -155,16 +70,14 @@ class App extends Component {
     })
   }
 
-  signalPeer(peer, data) {
-    try {
-      peer.signal(data)
-    } catch(e) {
-      console.log('sigal error', e)
-    }
+  setStream = stream => {
+    this.setState({ stream });
+    this.forceUpdate();
   }
 
-  renderPeers() {
-    return Object.entries(this.state.peers).map(entry => {
+  renderPeers = () => {
+    const { peers } = this.state;
+    return Object.entries(peers).map(entry => {
       console.log(entry);
       const [peerId, peer] = entry
       console.log('render peer', peerId, peer, entry)
@@ -176,7 +89,9 @@ class App extends Component {
   }
 
   render() {
+    const { peers } = this.state;
     return (
+      <>
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">WebRTC Video Chat</h1>
@@ -187,8 +102,19 @@ class App extends Component {
         <div id="me">
           <video id="myVideo" ref={video => this.video = video} controls></video>
         </div>
-        <div id="peers">{this.renderPeers()}</div>
+        {
+          peers &&
+            <div id="peers">{this.renderPeers()}</div>
+        }
       </div>
+      <WebRTCHandler
+        setPeerState={this.setPeerState}
+        setStream={this.setStream}
+        destroyPeer={this.destroyPeer}
+        signalPeer={this.signalPeer}
+        peers={peers}
+      />
+      </>
     );
   }
 }
