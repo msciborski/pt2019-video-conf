@@ -11,6 +11,34 @@ server.listen(PORT, () => {
 });
 
 io.listen(server, { log: true })
-  .on('connection', () => console.log('user connected'));
+  .on('connection', (socket) => {
+    console.log('connected')
+
+    io.emit('peer', { peerId: socket.id });
+
+    socket.on('disconect', reason => {
+      io.emit('unpeer', {
+        peerId: socket.id,
+        reason
+      });
+    })
+
+    socket.on('signal', msg => {
+      const recId = msg.to;
+      const receiver = io.sockets.connected[recId];
+
+      if (receiver) {
+        const data = {
+          from: socket.id,
+          ...msg,
+        }
+
+        io.to(recId).emit('signal', data);
+      }
+    })
+
+    
+
+  });
 
 
