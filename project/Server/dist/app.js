@@ -4,6 +4,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const morgan = require("morgan");
+const path_1 = require("path");
 class App {
     constructor() {
         this.app = express();
@@ -16,6 +17,15 @@ class App {
         this.app.use(bodyParser.urlencoded({ extended: false }));
         //CORS
         this.app.use(cors());
+        this.servingReactFile();
+    }
+    servingReactFile() {
+        const reactBuildFilesPath = path_1.join(__dirname, '../..', 'Client/build');
+        console.log(reactBuildFilesPath);
+        this.app.use(express.static(reactBuildFilesPath));
+        this.app.get('*', (request, response) => {
+            response.sendFile(path_1.join(reactBuildFilesPath, 'index.html'));
+        });
     }
     configMorgan() {
         // Logg error

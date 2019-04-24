@@ -2,6 +2,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import * as cors from "cors";
 import * as morgan from "morgan";
+import { join } from 'path';
 
 class App {
   public app: express.Application;
@@ -18,9 +19,19 @@ class App {
     this.app.use(bodyParser.urlencoded({ extended: false }));
 
     //CORS
-    this.app.use(cors())
-  }
+    this.app.use(cors());
 
+    this.servingReactFile();
+
+  }
+  private servingReactFile() {
+    const reactBuildFilesPath = join(__dirname, '../..', 'Client/build');
+    console.log(reactBuildFilesPath);
+    this.app.use(express.static(reactBuildFilesPath));
+    this.app.get('*', (request, response) => {
+      response.sendFile(join(reactBuildFilesPath, 'index.html'));
+    })
+  }
   private configMorgan(): void {
     // Logg error
     this.app.use(morgan('dev', {
