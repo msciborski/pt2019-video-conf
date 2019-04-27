@@ -3,7 +3,7 @@ import io from "socket.io-client";
 import Peer from "simple-peer";
 
 
-const ioUrl = 'https://165.227.169.182:5000/';
+const ioUrl = 'http://165.227.169.182:5000/';
 const enableTrickle = true;
 
 class WebRTCHandler extends Component {
