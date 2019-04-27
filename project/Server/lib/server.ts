@@ -2,7 +2,7 @@ import app from "./app";
 import * as socketio from "socket.io";
 import { createServer } from "http";
 
-const PORT = 3000;
+const PORT = 5000;
 const server = createServer(app);
 let io = require("socket.io")(server);
 

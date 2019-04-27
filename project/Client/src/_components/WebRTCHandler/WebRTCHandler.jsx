@@ -31,7 +31,7 @@ class WebRTCHandler extends Component {
     setStream(stream);
     this.stream = stream;
 
-    this.socket = io(ioUrl);
+    this.socket = io.connect(ioUrl);
 
     this.socket.on('peer', msg => {
       const peerId = msg.peerId;
