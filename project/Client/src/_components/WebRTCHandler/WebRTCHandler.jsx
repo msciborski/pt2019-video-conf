@@ -3,7 +3,7 @@ import io from "socket.io-client";
 import Peer from "simple-peer";
 
 
-const ioUrl = 'http://nodeference:5000/';
+const ioUrl = 'wss://nodeference.com/';
 const enableTrickle = true;
 
 class WebRTCHandler extends Component {
@@ -31,7 +31,7 @@ class WebRTCHandler extends Component {
     setStream(stream);
     this.stream = stream;
 
-    this.socket = io.connect(ioUrl);
+    this.socket = io(ioUrl, { secure: true, transports: ['polling']});
 
     this.socket.on('peer', msg => {
       const peerId = msg.peerId;
