@@ -74,7 +74,7 @@ class App extends Component {
     this.setState({ localStream: stream });
     this.forceUpdate();
   }
-
+ 
   render() {
     const { peers, localStream } = this.state;
     const { classes } = this.props;
