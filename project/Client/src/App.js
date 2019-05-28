@@ -17,10 +17,11 @@ export default class App extends Component {
     this.setState({ channel });
   }
   render() {
+    const { channel } = this.state;
     return (
       <div className="App">
         <Channel setChannel={this.setChannel} />
-        <Call />
+        <Call channel={channel} />
       </div>
     );
   }

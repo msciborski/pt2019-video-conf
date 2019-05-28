@@ -10,27 +10,31 @@ export class Channel extends Component {
   }
 
   handleChannelChange = event => {
-    const { name, value } = event;
-    this.setState({ [name]: value });
+    console.log(event);
+    // const { name, value } = event;
+    const { target } = event;
+    console.log(target.name, target.value);
+    this.setState({ [target.name]: target.value });
   }
 
   handleSubmit = event => {
       event.preventDefault();
-
       const { setChannel } = this.props;
       const { channel } = this.state;
       setChannel(channel);
+      console.log(channel);
       this.setState({ channel: '' });
   }
 
   render() {
     const { channel } = this.state;
-
+    console.log('Chanel', channel);
     return (
       <div>
         <form onSubmit={this.handleSubmit}>
           <label>Channel Name</label>
-          <input placeholder="Channel Name" 
+          <input placeholder="Channel Name"
+            name="channel" 
             value={channel}
             onChange={this.handleChannelChange}
           />
