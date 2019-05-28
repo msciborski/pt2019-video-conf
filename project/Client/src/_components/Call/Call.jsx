@@ -3,7 +3,6 @@ import AgoraRTC from "agora-rtc-sdk";
 import uuid from "uuid";
 import config from "../../config";
 import { Box, FormControl, Button, TextField } from "@material-ui/core";
-import './Call.css';
 
 const USER_ID = uuid.v4();
 let client = AgoraRTC.createClient({ mode: "live", codec: "h264" });
