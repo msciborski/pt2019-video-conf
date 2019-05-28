@@ -1,12 +1,31 @@
 import React, { Component } from "react";
+import { Box, FormControl, Button, TextField } from "@material-ui/core";
+import { withStyles } from '@material-ui/styles';
 
-export class Channel extends Component {
+const styles = {
+  root: {
+    margin: '0 0 0 auto',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  input: {
+    margin: '0 0 0 10px'
+  },
+  button: {
+    margin: '0 0 0 10px'
+  }
+};
+
+class Channel extends Component {
   constructor(props) {
-      super(props);
+    super(props);
 
-      this.state = {
-          channel: '',
-      };
+    this.state = {
+      channel: ""
+    };
   }
 
   handleChannelChange = event => {
@@ -15,32 +34,45 @@ export class Channel extends Component {
     const { target } = event;
     console.log(target.name, target.value);
     this.setState({ [target.name]: target.value });
-  }
+  };
 
   handleSubmit = event => {
-      event.preventDefault();
-      const { setChannel } = this.props;
-      const { channel } = this.state;
-      setChannel(channel);
-      console.log(channel);
-      this.setState({ channel: '' });
-  }
+    event.preventDefault();
+    const { setChannel } = this.props;
+    const { channel } = this.state;
+    setChannel(channel);
+    console.log('Submit');
+    this.setState({ channel: "" });
+  };
 
   render() {
     const { channel } = this.state;
-    console.log('Chanel', channel);
+    const { classes } = this.props;
+    console.log("Chanel", channel);
     return (
-      <div>
-        <form onSubmit={this.handleSubmit}>
+      <Box className={classes.root}>
+        <form className={classes.form} onSubmit={this.handleSubmit}>
           <label>Channel Name</label>
-          <input placeholder="Channel Name"
-            name="channel" 
+          <TextField
+            className={classes.input}
+            id="outlined-name"
+            label="Channel"
+            name="channel"
             value={channel}
             onChange={this.handleChannelChange}
+            margin="dense"
+            variant="outlined"
+            color=""
           />
-          <input type="submit" value="Join Channel" />
+          <Button className={classes.button} size="large" variant="outlined" color="primary" type="submit">
+            Join
+          </Button>
         </form>
-      </div>
+      </Box>
     );
   }
 }
+
+const styledChannel = withStyles(styles)(Channel);
+
+export { styledChannel as Channel }

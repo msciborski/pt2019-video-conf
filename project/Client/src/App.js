@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 import { Channel } from './_components/Channel';
 import { Call } from './_components/Call';
+import { Container, AppBar, Toolbar, Typography } from '@material-ui/core';
 
 export default class App extends Component {
   constructor(props) {
@@ -19,9 +20,16 @@ export default class App extends Component {
   render() {
     const { channel } = this.state;
     return (
-      <div className="App">
-        <Channel setChannel={this.setChannel} />
+      <div>
+      <AppBar position="static" color="secondary">
+        <Toolbar>
+          <Typography>Nodeference</Typography>
+          <Channel setChannel={this.setChannel} />
+        </Toolbar>
+      </AppBar>
+      <Container maxWidth="md">
         <Call channel={channel} />
+      </Container>
       </div>
     );
   }
