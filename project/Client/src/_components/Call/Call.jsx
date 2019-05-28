@@ -3,6 +3,7 @@ import AgoraRTC from "agora-rtc-sdk";
 import uuid from "uuid";
 import config from "../../config";
 import { Box, FormControl, Button, TextField } from "@material-ui/core";
+import './Call.css';
 
 const USER_ID = uuid.v4();
 let client = AgoraRTC.createClient({ mode: "live", codec: "h264" });
@@ -155,6 +156,14 @@ export class Call extends Component {
     return (
         <div>
         <div>
+        <Button onClick={this.leaveChannel} size="large" variant="outlined" color="secondary" type="submit"
+            style={{
+              // position: "absolute",
+              // top: "0",
+              // left: "0"
+            }}>
+            Leave
+        </Button>
           <div id="agora_local" style={{ width: "400px", height: "400px" }} />
           {Object.keys(this.state.remoteStreams).map(key => {
             let stream = this.state.remoteStreams[key];
@@ -168,12 +177,6 @@ export class Call extends Component {
             );
           })}
         </div>
-        <Button onClick={this.leaveChannel} size="large" variant="outlined" color="primary" type="submit">
-            Leave
-        </Button>
-        {/* </div>
-        <button onClick={this.leaveChannel}>Leave</button>
-        </div> */}
         </div>
       );
   }
