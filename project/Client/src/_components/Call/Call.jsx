@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import AgoraRTC from "agora-rtc-sdk";
 import uuid from "uuid";
 import config from "../../config";
+import { Box, FormControl, Button, TextField } from "@material-ui/core";
 
 const USER_ID = uuid.v4();
 let client = AgoraRTC.createClient({ mode: "live", codec: "h264" });
@@ -167,7 +168,12 @@ export class Call extends Component {
             );
           })}
         </div>
+        <Button onClick={this.leaveChannel} size="large" variant="outlined" color="primary" type="submit">
+            Leave
+        </Button>
+        {/* </div>
         <button onClick={this.leaveChannel}>Leave</button>
+        </div> */}
         </div>
       );
   }
