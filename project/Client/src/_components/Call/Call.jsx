@@ -154,7 +154,6 @@ export class Call extends Component {
   render() {
     return (
         <div>
-        <div>
           <div id="agora_local" style={{ width: "400px", height: "400px", position: "relative" }} >
           <Button  onClick={this.leaveChannel} size="large" variant="outlined" color="secondary" type="submit"
             style={{
@@ -186,7 +185,6 @@ export class Call extends Component {
             }}>
             Leave
         </Button> */}
-        </div>
         </div>
       );
   }
