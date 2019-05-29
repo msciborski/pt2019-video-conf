@@ -155,16 +155,17 @@ export class Call extends Component {
     return (
         <div>
         <div>
-        <Button onClick={this.leaveChannel} size="large" variant="outlined" color="secondary" type="submit"
+          <div id="agora_local" style={{ width: "400px", height: "400px", position: "relative" }} >
+          <Button  onClick={this.leaveChannel} size="large" variant="outlined" color="secondary" type="submit"
             style={{
               position: "absolute",
-              top: "25%",
-              left: "25%",
+              top: "0px",
+              left: "0px",
               zIndex: 10
             }}>
             Leave
         </Button>
-          <div id="agora_local" style={{ width: "400px", height: "400px" }} />
+          </div>
           {Object.keys(this.state.remoteStreams).map(key => {
             let stream = this.state.remoteStreams[key];
             let streamId = stream.getId();
@@ -172,10 +173,19 @@ export class Call extends Component {
               <div
                 key={streamId}
                 id={`agora_remote ${streamId}`}
-                style={{ width: "400px", height: "400px" }}
+                style={{ width: "400px", height: "400px" }}        
               />
             );
           })}
+          {/* <Button class="btn" onClick={this.leaveChannel} size="large" variant="outlined" color="secondary" type="submit"
+            style={{
+              position: "absolute",
+              top: "25%",
+              left: "25%",
+              zIndex: 10
+            }}>
+            Leave
+        </Button> */}
         </div>
         </div>
       );
