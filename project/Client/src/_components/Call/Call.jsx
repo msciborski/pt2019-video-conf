@@ -157,9 +157,10 @@ export class Call extends Component {
         <div>
         <Button onClick={this.leaveChannel} size="large" variant="outlined" color="secondary" type="submit"
             style={{
-              // position: "absolute",
-              // top: "0",
-              // left: "0"
+              position: "absolute",
+              top: "25%",
+              left: "25%",
+              zIndex: 10
             }}>
             Leave
         </Button>
