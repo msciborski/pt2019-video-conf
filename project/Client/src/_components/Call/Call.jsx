@@ -5,6 +5,7 @@ import config from "../../config";
 import { Box, FormControl, Button, TextField } from "@material-ui/core";
 
 const USER_ID = uuid.v4();
+const SCREEN_SHARE_USER_ID = uuid.v4();
 let client = AgoraRTC.createClient({ mode: "live", codec: "h264" });
 
 export class Call extends Component {
@@ -18,7 +19,10 @@ export class Call extends Component {
         video: true,
         screen: false
       }),
-      remoteStreams: []
+      screenClient: undefined,
+      localStreamScreenShare: undefined,
+      remoteStreams: [],
+      userJoined: false
     };
   }
 
@@ -29,7 +33,8 @@ export class Call extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.channel !== this.props.channel && this.props.channel !== "") {
-        console.log('Join channel');
+      console.log("Join channel");
+      this.setState({ userJoined: true });
       this.joinChannel();
     }
   }
@@ -56,15 +61,16 @@ export class Call extends Component {
   };
 
   leaveChannel = () => {
-      console.log('Leave');
-      client.leave(
-          () => {
-              console.log('User left');
-          },
-          (err) => console.log(err),
-      );
-      this.setState({ channel: '' });
-  }
+    console.log("Leave");
+    client.leave(
+      () => {
+        this.setState({ userJoined: false });
+        console.log("User left");
+      },
+      err => console.log(err)
+    );
+    this.setState({ channel: "" });
+  };
 
   initLocalStream = () => {
     let me = this;
@@ -99,7 +105,7 @@ export class Call extends Component {
     me.setState(
       {
         remoteStreams: {
-          ...me.state.remoteStream,
+          ...me.state.remoteStreams,
           [stream.getId()]: stream
         }
       },
@@ -129,6 +135,7 @@ export class Call extends Component {
 
   onRemoteClientAdded = evt => {
     let me = this;
+    console.log("Me", me);
     let remoteStream = evt.stream;
     me.state.remoteStreams[remoteStream.getId()].play(
       "agora_remote " + remoteStream.getId()
@@ -151,32 +158,141 @@ export class Call extends Component {
     }
   };
 
-  render() {
-    return (
-        <div>
-          <div id="agora_local" style={{ width: "400px", height: "400px", position: "relative" }} >
-          <Button  onClick={this.leaveChannel} size="large" variant="outlined" color="secondary" type="submit"
-            style={{
-              position: "absolute",
-              top: "0px",
-              left: "0px",
-              zIndex: 10
-            }}>
-            Leave
-        </Button>
-          </div>
-          {Object.keys(this.state.remoteStreams).map(key => {
-            let stream = this.state.remoteStreams[key];
-            let streamId = stream.getId();
-            return (
-              <div
-                key={streamId}
-                id={`agora_remote ${streamId}`}
-                style={{ width: "400px", height: "400px" }}        
-              />
+  toggleAudio = () => {
+    const { localStream } = this.state;
+
+    if (localStream.isAudioOn()) {
+      localStream.disableAudio();
+    } else {
+      localStream.enableAudio();
+    }
+  };
+
+  toggleVideo = () => {
+    const { localStream } = this.state;
+    if (localStream.isVideoOn()) {
+      localStream.disableVideo();
+    } else {
+      localStream.enableVideo();
+    }
+  };
+
+  toggleScreenShare = () => {
+    const { screenClient } = this.state;
+    const { channel } = this.props;
+
+    if (screenClient) {
+    } else {
+      const screenShareClient = AgoraRTC.createClient({
+        mode: "rtc",
+        codec: "vp8"
+      });
+
+      screenShareClient.init(
+        config.appId,
+        () => console.log("screen share client initialize"),
+        err => console.log(err)
+      );
+      this.setState({ screenClient: screenShareClient });
+
+      const screenShareStream = AgoraRTC.createStream({
+        streamID: SCREEN_SHARE_USER_ID,
+        video: false,
+        audio: false,
+        screen: true,
+        mediaSource: "window"
+      });
+
+      screenShareStream.init(
+        () => {
+          screenShareStream.play("agora_local_screen");
+
+          screenShareClient.on("stream-added", evt => {
+            const { stream } = evt;
+            this.setState(
+              {
+                remoteStreams: {
+                  ...this.state.remoteStreams,
+                  [stream.getId()]: stream
+                }
+              },
+              () => {
+                screenShareClient.subscribe(stream, function(err) {
+                  console.log("Subscribe stream failed", err);
+                });
+              }
             );
-          })}
-          {/* <Button class="btn" onClick={this.leaveChannel} size="large" variant="outlined" color="secondary" type="submit"
+          });
+
+          screenShareClient.on("stream-subscribed", this.onRemoteClientAdded);
+          screenShareClient.on("stream-removed", this.onStreamRemoved);
+          screenShareClient.on("peer-leave", this.onPeerLeave);
+
+          if (channel !== "") {
+            console.log(`Joining screen share: ${channel}`);
+            screenShareClient.join(
+              null,
+              channel,
+              SCREEN_SHARE_USER_ID,
+              uid => {
+                console.log(`Joining screen share: ${uid} `);
+                screenShareClient.publish(screenShareStream, err =>
+                  console.log(err)
+                );
+              },
+              err => console.log(err)
+            );
+          }
+        },
+        err => console.log(err)
+      );
+
+      this.setState({ localStreamScreenShare: screenShareStream });
+    }
+  };
+
+  render() {
+    const { userJoined } = this.state;
+    return (
+      <div>
+        <div
+          id="agora_local"
+          style={{ width: "400px", height: "400px", position: "relative" }}
+        >
+          {userJoined && (
+            <div>
+              <Button
+                onClick={this.leaveChannel}
+                size="large"
+                variant="outlined"
+                color="secondary"
+              >
+                Leave
+              </Button>
+              <Button onClick={this.toggleVideo}>Toggle video</Button>
+              <Button onClick={this.toggleAudio}>Toggle audio</Button>
+              <Button onClick={this.toggleScreenShare}>
+                Toggle screenshare
+              </Button>
+            </div>
+          )}
+        </div>
+        <div
+          id="agora_local_screen"
+          style={{ width: "400px", height: "400px", position: "relative" }}
+        />
+        {Object.keys(this.state.remoteStreams).map(key => {
+          let stream = this.state.remoteStreams[key];
+          let streamId = stream.getId();
+          return (
+            <div
+              key={streamId}
+              id={`agora_remote ${streamId}`}
+              style={{ width: "400px", height: "400px" }}
+            />
+          );
+        })}
+        {/* <Button class="btn" onClick={this.leaveChannel} size="large" variant="outlined" color="secondary" type="submit"
             style={{
               position: "absolute",
               top: "25%",
@@ -185,7 +301,7 @@ export class Call extends Component {
             }}>
             Leave
         </Button> */}
-        </div>
-      );
+      </div>
+    );
   }
 }

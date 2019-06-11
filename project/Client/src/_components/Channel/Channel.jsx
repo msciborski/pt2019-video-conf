@@ -24,8 +24,14 @@ class Channel extends Component {
     super(props);
 
     this.state = {
-      channel: ""
+      channel: "",
+      joinedChannel: ''
     };
+  }
+
+  componentDidMount() {
+    const { channel } = this.state;
+    
   }
 
   handleChannelChange = event => {
@@ -43,16 +49,17 @@ class Channel extends Component {
     setChannel(channel);
     console.log('Submit');
     this.setState({ channel: "" });
+    this.setState({ joinedChannel: channel });
   };
 
   render() {
-    const { channel } = this.state;
+    const { channel, joinedChannel } = this.state;
     const { classes } = this.props;
     console.log("Chanel", channel);
     return (
       <Box className={classes.root}>
         <form className={classes.form} onSubmit={this.handleSubmit}>
-          <label>Channel Name</label>
+          <label>{`Channel: ${joinedChannel}`}</label>
           <TextField
             className={classes.input}
             id="outlined-name"
