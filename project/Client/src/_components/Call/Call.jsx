@@ -252,35 +252,35 @@ export class Call extends Component {
   };
 
   render() {
-    const { userJoined } = this.state;
+    const { userJoined, screenClient } = this.state;
     return (
       <div>
+        {userJoined && (
+          <div>
+            <Button
+              onClick={this.leaveChannel}
+              size="large"
+              variant="outlined"
+              color="secondary"
+            >
+              Leave
+            </Button>
+            <Button onClick={this.toggleVideo}>Toggle video</Button>
+            <Button onClick={this.toggleAudio}>Toggle audio</Button>
+            <Button onClick={this.toggleScreenShare}>Toggle screenshare</Button>
+          </div>
+        )}
         <div
           id="agora_local"
           style={{ width: "400px", height: "400px", position: "relative" }}
-        >
-          {userJoined && (
-            <div>
-              <Button
-                onClick={this.leaveChannel}
-                size="large"
-                variant="outlined"
-                color="secondary"
-              >
-                Leave
-              </Button>
-              <Button onClick={this.toggleVideo}>Toggle video</Button>
-              <Button onClick={this.toggleAudio}>Toggle audio</Button>
-              <Button onClick={this.toggleScreenShare}>
-                Toggle screenshare
-              </Button>
-            </div>
-          )}
-        </div>
-        <div
-          id="agora_local_screen"
-          style={{ width: "400px", height: "400px", position: "relative" }}
         />
+        {screenClient && (
+          <div
+            id="agora_local_screen"
+            style={{ width: "400px", height: "400px", position: "relative" }}
+          />
+        )}
+
         {Object.keys(this.state.remoteStreams).map(key => {
           let stream = this.state.remoteStreams[key];
           let streamId = stream.getId();
